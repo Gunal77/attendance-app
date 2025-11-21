@@ -153,9 +153,22 @@ class _CheckInOutScreenState extends State<CheckInOutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         title: 'Check In / Check Out',
         showBackButton: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () {
+              setState(() {
+                _selectedImage = null;
+                _latController.clear();
+                _longController.clear();
+              });
+            },
+            tooltip: 'Clear',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

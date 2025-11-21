@@ -1,0 +1,183 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "name": "John Smith",
+    "email": "john.smith@example.com",
+    "phone": "+1-555-0101",
+    "role": "Carpenter",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "name": "Michael Johnson",
+    "email": "michael.j@example.com",
+    "phone": "+1-555-0102",
+    "role": "Electrician",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "name": "Robert Williams",
+    "email": "robert.w@example.com",
+    "phone": "+1-555-0103",
+    "role": "Plumber",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440004",
+    "name": "James Brown",
+    "email": "james.b@example.com",
+    "phone": "+1-555-0104",
+    "role": "Mason",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440005",
+    "name": "David Jones",
+    "email": "david.j@example.com",
+    "phone": "+1-555-0105",
+    "role": "Painter",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440006",
+    "name": "William Garcia",
+    "email": "william.g@example.com",
+    "phone": "+1-555-0106",
+    "role": "Welder",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440007",
+    "name": "Richard Miller",
+    "email": "richard.m@example.com",
+    "phone": "+1-555-0107",
+    "role": "Carpenter",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440008",
+    "name": "Joseph Davis",
+    "email": "joseph.d@example.com",
+    "phone": "+1-555-0108",
+    "role": "Electrician",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440009",
+    "name": "Thomas Rodriguez",
+    "email": "thomas.r@example.com",
+    "phone": "+1-555-0109",
+    "role": "Laborer",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440010",
+    "name": "Charles Martinez",
+    "email": "charles.m@example.com",
+    "phone": "+1-555-0110",
+    "role": "Plumber",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440011",
+    "name": "Christopher Anderson",
+    "email": "chris.a@example.com",
+    "phone": "+1-555-0111",
+    "role": "Mason",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440012",
+    "name": "Daniel Taylor",
+    "email": "daniel.t@example.com",
+    "phone": "+1-555-0112",
+    "role": "Carpenter",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440013",
+    "name": "Matthew Thomas",
+    "email": "matthew.t@example.com",
+    "phone": "+1-555-0113",
+    "role": "Electrician",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440014",
+    "name": "Anthony Hernandez",
+    "email": "anthony.h@example.com",
+    "phone": "+1-555-0114",
+    "role": "Painter",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440015",
+    "name": "Mark Moore",
+    "email": "mark.m@example.com",
+    "phone": "+1-555-0115",
+    "role": "Welder",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440016",
+    "name": "Donald Martin",
+    "email": "donald.m@example.com",
+    "phone": "+1-555-0116",
+    "role": "Laborer",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440017",
+    "name": "Steven Jackson",
+    "email": "steven.j@example.com",
+    "phone": "+1-555-0117",
+    "role": "Plumber",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440018",
+    "name": "Paul Thompson",
+    "email": "paul.t@example.com",
+    "phone": "+1-555-0118",
+    "role": "Mason",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440019",
+    "name": "Andrew White",
+    "email": "andrew.w@example.com",
+    "phone": "+1-555-0119",
+    "role": "Carpenter",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440020",
+    "name": "Joshua Harris",
+    "email": "joshua.h@example.com",
+    "phone": "+1-555-0120",
+    "role": "Electrician",
+    "project_id": null,
+    "created_at": "2024-01-15T08:00:00Z"
+  }
+]
+

@@ -34,6 +34,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             _currentIndex = index;
           });
         },
+        elevation: 8,
+        height: 70,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
@@ -55,4 +58,3 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 }
-

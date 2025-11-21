@@ -1,0 +1,19 @@
+{
+  "addWorker": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "1234567890",
+    "department": "Construction"
+  },
+  "editWorker": {
+    "name": "John Doe Updated",
+    "email": "john.doe.updated@example.com",
+    "phone": "9876543210",
+    "department": "Engineering"
+  },
+  "searchWorker": {
+    "searchText": "John",
+    "expectedResults": 1
+  }
+}
+

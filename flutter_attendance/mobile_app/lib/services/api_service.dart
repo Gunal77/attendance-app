@@ -250,21 +250,26 @@ class ApiService {
     String? location,
     DateTime? startDate,
     DateTime? endDate,
+    String? description,
+    double? budget,
   }) async {
     final token = _requireAdminToken();
     final uri = Uri.parse('$_baseUrl/admin/projects');
+    final body = <String, dynamic>{
+      'name': name,
+      if (location != null && location.isNotEmpty) 'location': location,
+      if (startDate != null) 'start_date': startDate.toIso8601String(),
+      if (endDate != null) 'end_date': endDate.toIso8601String(),
+      if (description != null && description.isNotEmpty) 'description': description,
+      if (budget != null) 'budget': budget,
+    };
     final response = await _client.post(
       uri,
       headers: {
         ..._authHeaders(token),
         HttpHeaders.contentTypeHeader: 'application/json',
       },
-      body: jsonEncode({
-        'name': name,
-        'location': location,
-        'start_date': startDate?.toIso8601String(),
-        'end_date': endDate?.toIso8601String(),
-      }),
+      body: jsonEncode(body),
     );
 
     final data = _decodeResponse(response);
@@ -278,6 +283,8 @@ class ApiService {
     String? location,
     DateTime? startDate,
     DateTime? endDate,
+    String? description,
+    double? budget,
   }) async {
     final token = _requireAdminToken();
     final uri = Uri.parse('$_baseUrl/admin/projects/$id');
@@ -286,6 +293,8 @@ class ApiService {
     if (location != null) body['location'] = location;
     if (startDate != null) body['start_date'] = startDate.toIso8601String();
     if (endDate != null) body['end_date'] = endDate.toIso8601String();
+    if (description != null) body['description'] = description;
+    if (budget != null) body['budget'] = budget;
 
     final response = await _client.put(
       uri,

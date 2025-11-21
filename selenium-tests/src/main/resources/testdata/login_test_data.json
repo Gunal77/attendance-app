@@ -1,0 +1,23 @@
+{
+  "validLogin": {
+    "email": "admin@example.com",
+    "password": "admin123",
+    "expectedUrl": "/dashboard"
+  },
+  "invalidEmail": {
+    "email": "invalid@email.com",
+    "password": "admin123",
+    "expectedError": "Login failed"
+  },
+  "invalidPassword": {
+    "email": "admin@example.com",
+    "password": "wrongpassword",
+    "expectedError": "Login failed"
+  },
+  "emptyCredentials": {
+    "email": "",
+    "password": "",
+    "expectedError": "required"
+  }
+}
+

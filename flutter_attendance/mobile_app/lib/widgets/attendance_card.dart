@@ -13,25 +13,10 @@ class AttendanceCard extends StatelessWidget {
   final Map<String, dynamic> record;
   final VoidCallback? onTap;
 
-  String _formatCoordinate(dynamic value) {
-    if (value == null) return '-';
-    if (value is num) {
-      return value.toStringAsFixed(4);
-    }
-    final parsed = double.tryParse(value.toString());
-    if (parsed != null) {
-      return parsed.toStringAsFixed(4);
-    }
-    return value.toString();
-  }
-
   @override
   Widget build(BuildContext context) {
     final checkInTime = record['check_in_time']?.toString();
     final checkOutTime = record['check_out_time']?.toString();
-    final imageUrl = record['image_url']?.toString();
-    final latitude = record['latitude'];
-    final longitude = record['longitude'];
     final isCheckedOut = checkOutTime != null && checkOutTime.isNotEmpty;
 
     DateTime? checkInDate;
@@ -46,6 +31,15 @@ class AttendanceCard extends StatelessWidget {
 
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('hh:mm a');
+
+    // Calculate duration if both times are available
+    String? durationText;
+    if (checkInDate != null && checkOutDate != null) {
+      final duration = checkOutDate.difference(checkInDate);
+      final hours = duration.inHours;
+      final minutes = duration.inMinutes.remainder(60);
+      durationText = '${hours}h ${minutes}m';
+    }
 
     return Card(
       elevation: 2,
@@ -65,15 +59,30 @@ class AttendanceCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      checkInDate != null
-                          ? dateFormat.format(checkInDate)
-                          : 'Date not available',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textColor,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          checkInDate != null
+                              ? dateFormat.format(checkInDate)
+                              : 'Date not available',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textColor,
+                          ),
+                        ),
+                        if (durationText != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Duration: $durationText',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: AppTheme.textColor.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   Container(
@@ -88,10 +97,10 @@ class AttendanceCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      isCheckedOut ? 'Completed' : 'Active',
+                      isCheckedOut ? 'COMPLETED' : 'ACTIVE',
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                         color: isCheckedOut
                             ? AppTheme.successColor
                             : AppTheme.primaryColor,
@@ -101,137 +110,104 @@ class AttendanceCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.login,
-                      size: 20,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          'Check In',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: AppTheme.textColor.withOpacity(0.6),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.login,
+                            size: 18,
+                            color: AppTheme.primaryColor,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          checkInDate != null
-                              ? timeFormat.format(checkInDate)
-                              : 'N/A',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.textColor,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Check In',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: AppTheme.textColor.withOpacity(0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                checkInDate != null
+                                    ? timeFormat.format(checkInDate)
+                                    : 'N/A',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.textColor,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              if (isCheckedOut) ...[
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.secondaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.logout,
-                        size: 20,
-                        color: AppTheme.secondaryColor,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    if (isCheckedOut) ...[
+                      const SizedBox(height: 12),
+                      Row(
                         children: [
-                          Text(
-                            'Check Out',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: AppTheme.textColor.withOpacity(0.6),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.secondaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.logout,
+                              size: 18,
+                              color: AppTheme.secondaryColor,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            checkOutDate != null
-                                ? timeFormat.format(checkOutDate)
-                                : 'N/A',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.textColor,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Check Out',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    color: AppTheme.textColor.withOpacity(0.6),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  checkOutDate != null
+                                      ? timeFormat.format(checkOutDate)
+                                      : 'N/A',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ),
+                    ],
                   ],
                 ),
-              ],
-              if (latitude != null && longitude != null) ...[
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: AppTheme.textColor.withOpacity(0.6),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${_formatCoordinate(latitude)}, ${_formatCoordinate(longitude)}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: AppTheme.textColor.withOpacity(0.6),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (imageUrl != null && imageUrl.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.image,
-                      size: 16,
-                      color: AppTheme.textColor.withOpacity(0.6),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Image available',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: AppTheme.textColor.withOpacity(0.6),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ],
           ),
         ),

@@ -375,15 +375,19 @@ class _EmployeesPageState extends State<EmployeesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Employees'),
+        title: const Text(
+          'Employees',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: _isLoading ? null : _loadData,
             tooltip: 'Refresh',
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await _apiService.clearAdminSession();
               if (!mounted) return;
@@ -418,9 +422,29 @@ class _EmployeesPageState extends State<EmployeesPage> {
                 )
               : _employees.isEmpty
                   ? Center(
-                      child: Text(
-                        'No employees found',
-                        style: Theme.of(context).textTheme.titleMedium,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No employees found',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tap the + button to add your first employee',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey.shade600,
+                                ),
+                          ),
+                        ],
                       ),
                     )
                   : RefreshIndicator(
@@ -431,92 +455,189 @@ class _EmployeesPageState extends State<EmployeesPage> {
                         itemBuilder: (context, index) {
                           final employee = _employees[index];
                           return Card(
+                            elevation: 2,
                             margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              title: Text(
-                                employee.name,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (employee.email != null &&
-                                      employee.email!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.email, size: 16),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              employee.email!,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: InkWell(
+                              onTap: () => _showEditDialog(employee),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .primaryColor
+                                                .withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  if (employee.role != null &&
-                                      employee.role!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.work, size: 16),
-                                          const SizedBox(width: 4),
-                                          Text(employee.role!),
-                                        ],
-                                      ),
-                                    ),
-                                  if (employee.projectName != null &&
-                                      employee.projectName!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.folder, size: 16),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              employee.projectName!,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Theme.of(context).primaryColor,
+                                            size: 24,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                employee.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                              ),
+                                              if (employee.role != null &&
+                                                  employee.role!.isNotEmpty)
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 4),
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.blue.shade50,
+                                                      borderRadius:
+                                                          BorderRadius.circular(8),
+                                                    ),
+                                                    child: Text(
+                                                      employee.role!,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color: Colors.blue.shade700,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuButton(
+                                          icon: const Icon(Icons.more_vert),
+                                          itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.edit, size: 20),
+                                                  SizedBox(width: 8),
+                                                  Text('Edit'),
+                                                ],
+                                              ),
+                                              onTap: () {
+                                                Future.delayed(
+                                                  Duration.zero,
+                                                  () => _showEditDialog(employee),
+                                                );
+                                              },
+                                            ),
+                                            PopupMenuItem(
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.delete, size: 20, color: Colors.red),
+                                                  SizedBox(width: 8),
+                                                  Text('Delete', style: TextStyle(color: Colors.red)),
+                                                ],
+                                              ),
+                                              onTap: () {
+                                                Future.delayed(
+                                                  Duration.zero,
+                                                  () => _deleteEmployee(employee),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                  if (employee.phone != null &&
-                                      employee.phone!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.phone, size: 16),
-                                          const SizedBox(width: 4),
-                                          Text(employee.phone!),
-                                        ],
+                                    const SizedBox(height: 12),
+                                    if (employee.email != null &&
+                                        employee.email!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 8),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.email_outlined,
+                                                size: 18, color: Colors.grey.shade600),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                employee.email!,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Colors.grey.shade700,
+                                                    ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                ],
+                                    if (employee.phone != null &&
+                                        employee.phone!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 8),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.phone_outlined,
+                                                size: 18, color: Colors.grey.shade600),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              employee.phone!,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color: Colors.grey.shade700,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    if (employee.projectName != null &&
+                                        employee.projectName!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 8),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.folder_outlined,
+                                                size: 18, color: Colors.grey.shade600),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                employee.projectName!,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      color: Colors.grey.shade700,
+                                                    ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () => _showEditDialog(employee),
-                                    tooltip: 'Edit',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => _deleteEmployee(employee),
-                                    tooltip: 'Delete',
-                                    color: Colors.red,
-                                  ),
-                                ],
-                              ),
-                              isThreeLine: true,
                             ),
                           );
                         },

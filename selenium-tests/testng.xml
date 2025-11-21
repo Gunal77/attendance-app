@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Admin Portal Test Suite" parallel="methods" thread-count="3">
+
+    <test name="Login Tests">
+        <classes>
+            <class name="com.attendance.tests.LoginTests"/>
+        </classes>
+    </test>
+
+    <test name="Dashboard Tests">
+        <classes>
+            <class name="com.attendance.tests.DashboardTests"/>
+        </classes>
+    </test>
+
+    <test name="Worker Management Tests">
+        <classes>
+            <class name="com.attendance.tests.WorkerTests"/>
+        </classes>
+    </test>
+
+    <test name="Project Management Tests">
+        <classes>
+            <class name="com.attendance.tests.ProjectTests"/>
+        </classes>
+    </test>
+
+    <test name="Attendance Management Tests">
+        <classes>
+            <class name="com.attendance.tests.AttendanceTests"/>
+        </classes>
+    </test>
+
+    <test name="End-to-End Tests">
+        <classes>
+            <class name="com.attendance.tests.EndToEndTests"/>
+        </classes>
+    </test>
+</suite>
+

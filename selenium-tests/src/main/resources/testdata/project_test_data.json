@@ -1,0 +1,23 @@
+{
+  "addProject": {
+    "name": "New Construction Project",
+    "description": "A new construction project for testing",
+    "location": "Singapore",
+    "startDate": "2024-01-01",
+    "endDate": "2024-12-31",
+    "budget": "1000000.00"
+  },
+  "editProject": {
+    "name": "Updated Construction Project",
+    "description": "Updated project description",
+    "location": "Malaysia",
+    "startDate": "2024-02-01",
+    "endDate": "2025-01-31",
+    "budget": "1500000.00"
+  },
+  "searchProject": {
+    "searchText": "Construction",
+    "expectedResults": 1
+  }
+}
+

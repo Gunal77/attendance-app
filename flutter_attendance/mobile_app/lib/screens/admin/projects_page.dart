@@ -15,6 +15,7 @@ class ProjectsPage extends StatefulWidget {
 class _ProjectsPageState extends State<ProjectsPage> {
   final ApiService _apiService = ApiService();
   final DateFormat _dateFormat = DateFormat('MMM dd, yyyy');
+  final NumberFormat _currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
   List<Project> _projects = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -58,6 +59,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
   Future<void> _showCreateDialog() async {
     final nameController = TextEditingController();
     final locationController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final budgetController = TextEditingController();
     DateTime? startDate;
     DateTime? endDate;
 
@@ -80,11 +83,32 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter project description',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                TextField(
                   controller: locationController,
                   decoration: const InputDecoration(
                     labelText: 'Location',
                     border: OutlineInputBorder(),
                   ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: budgetController,
+                  decoration: const InputDecoration(
+                    labelText: 'Budget (SGD)',
+                    border: OutlineInputBorder(),
+                    hintText: 'e.g., 1000000',
+                    prefixText: '\$ ',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 ),
                 const SizedBox(height: 16),
                 ListTile(
@@ -140,6 +164,17 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   return;
                 }
 
+                double? budget;
+                if (budgetController.text.trim().isNotEmpty) {
+                  budget = double.tryParse(budgetController.text.trim());
+                  if (budget == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invalid budget amount')),
+                    );
+                    return;
+                  }
+                }
+
                 try {
                   await _apiService.createProject(
                     name: nameController.text.trim(),
@@ -148,6 +183,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         : locationController.text.trim(),
                     startDate: startDate,
                     endDate: endDate,
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
+                    budget: budget,
                   );
                   if (context.mounted) {
                     Navigator.of(context).pop();
@@ -181,6 +220,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
   Future<void> _showEditDialog(Project project) async {
     final nameController = TextEditingController(text: project.name);
     final locationController = TextEditingController(text: project.location ?? '');
+    final descriptionController = TextEditingController(text: project.description ?? '');
+    final budgetController = TextEditingController(
+      text: project.budget != null ? project.budget!.toStringAsFixed(0) : '',
+    );
     DateTime? startDate = project.startDate;
     DateTime? endDate = project.endDate;
 
@@ -202,11 +245,32 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter project description',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                TextField(
                   controller: locationController,
                   decoration: const InputDecoration(
                     labelText: 'Location',
                     border: OutlineInputBorder(),
                   ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: budgetController,
+                  decoration: const InputDecoration(
+                    labelText: 'Budget (SGD)',
+                    border: OutlineInputBorder(),
+                    hintText: 'e.g., 1000000',
+                    prefixText: '\$ ',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 ),
                 const SizedBox(height: 16),
                 ListTile(
@@ -262,6 +326,17 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   return;
                 }
 
+                double? budget;
+                if (budgetController.text.trim().isNotEmpty) {
+                  budget = double.tryParse(budgetController.text.trim());
+                  if (budget == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invalid budget amount')),
+                    );
+                    return;
+                  }
+                }
+
                 try {
                   await _apiService.updateProject(
                     id: project.id,
@@ -271,6 +346,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         : locationController.text.trim(),
                     startDate: startDate,
                     endDate: endDate,
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
+                        : descriptionController.text.trim(),
+                    budget: budget,
                   );
                   if (context.mounted) {
                     Navigator.of(context).pop();
@@ -349,22 +428,37 @@ class _ProjectsPageState extends State<ProjectsPage> {
     }
   }
 
+  String _formatBudget(double? budget) {
+    if (budget == null) return '';
+    if (budget >= 1000000) {
+      return '\$${(budget / 1000000).toStringAsFixed(1)}M';
+    } else if (budget >= 1000) {
+      return '\$${(budget / 1000).toStringAsFixed(1)}K';
+    }
+    return _currencyFormat.format(budget);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Projects'),
+        title: const Text(
+          'Projects',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: _isLoading ? null : _loadProjects,
             tooltip: 'Refresh',
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await _apiService.clearAdminSession();
               if (!mounted) return;
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
                 (route) => false,
@@ -396,9 +490,29 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 )
               : _projects.isEmpty
                   ? Center(
-                      child: Text(
-                        'No projects found',
-                        style: Theme.of(context).textTheme.titleMedium,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.folder_outlined,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No projects found',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tap the + button to create your first project',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey.shade600,
+                                ),
+                          ),
+                        ],
                       ),
                     )
                   : RefreshIndicator(
@@ -408,68 +522,232 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         itemCount: _projects.length,
                         itemBuilder: (context, index) {
                           final project = _projects[index];
+                          final isCompleted = project.endDate != null &&
+                              project.endDate!.isBefore(DateTime.now());
+                          final isActive = !isCompleted;
+
                           return Card(
+                            elevation: 2,
                             margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              title: Text(
-                                project.name,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (project.location != null &&
-                                      project.location!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.location_on, size: 16),
-                                          const SizedBox(width: 4),
-                                          Text(project.location!),
-                                        ],
-                                      ),
-                                    ),
-                                  if (project.startDate != null ||
-                                      project.endDate != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.calendar_today, size: 16),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            project.startDate != null &&
-                                                    project.endDate != null
-                                                ? '${_dateFormat.format(project.startDate!)} - ${_dateFormat.format(project.endDate!)}'
-                                                : project.startDate != null
-                                                    ? 'From ${_dateFormat.format(project.startDate!)}'
-                                                    : project.endDate != null
-                                                        ? 'Until ${_dateFormat.format(project.endDate!)}'
-                                                        : '',
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: InkWell(
+                              onTap: () => _showEditDialog(project),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: isActive
+                                                ? Colors.green.shade50
+                                                : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
+                                          child: Icon(
+                                            Icons.folder,
+                                            color: isActive
+                                                ? Colors.green.shade600
+                                                : Colors.grey.shade600,
+                                            size: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                project.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: isActive
+                                                      ? Colors.green.shade50
+                                                      : Colors.grey.shade100,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  isActive ? 'ACTIVE' : 'COMPLETED',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                        color: isActive
+                                                            ? Colors.green.shade700
+                                                            : Colors.grey.shade700,
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 10,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        PopupMenuButton(
+                                          icon: const Icon(Icons.more_vert),
+                                          itemBuilder: (context) => [
+                                            PopupMenuItem(
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.edit, size: 20),
+                                                  SizedBox(width: 8),
+                                                  Text('Edit'),
+                                                ],
+                                              ),
+                                              onTap: () {
+                                                Future.delayed(
+                                                  Duration.zero,
+                                                  () => _showEditDialog(project),
+                                                );
+                                              },
+                                            ),
+                                            PopupMenuItem(
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.delete,
+                                                      size: 20, color: Colors.red),
+                                                  SizedBox(width: 8),
+                                                  Text('Delete',
+                                                      style:
+                                                          TextStyle(color: Colors.red)),
+                                                ],
+                                              ),
+                                              onTap: () {
+                                                Future.delayed(
+                                                  Duration.zero,
+                                                  () => _deleteProject(project),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    if (project.description != null &&
+                                        project.description!.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        project.description!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Colors.grey.shade700,
+                                            ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade50,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          if (project.location != null &&
+                                              project.location!.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 8),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.location_on_outlined,
+                                                      size: 18,
+                                                      color: Colors.grey.shade600),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      project.location!,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color: Colors.grey.shade700,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          if (project.budget != null)
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 8),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.attach_money,
+                                                      size: 18,
+                                                      color: Colors.grey.shade600),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    'Budget: ${_formatBudget(project.budget)}',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.copyWith(
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Theme.of(context)
+                                                              .primaryColor,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          if (project.startDate != null ||
+                                              project.endDate != null)
+                                            Row(
+                                              children: [
+                                                Icon(Icons.calendar_today_outlined,
+                                                    size: 18,
+                                                    color: Colors.grey.shade600),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    project.startDate != null &&
+                                                            project.endDate != null
+                                                        ? '${_dateFormat.format(project.startDate!)} - ${_dateFormat.format(project.endDate!)}'
+                                                        : project.startDate != null
+                                                            ? 'From ${_dateFormat.format(project.startDate!)}'
+                                                            : project.endDate != null
+                                                                ? 'Until ${_dateFormat.format(project.endDate!)}'
+                                                                : '',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.copyWith(
+                                                          color: Colors.grey.shade700,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                         ],
                                       ),
                                     ),
-                                ],
+                                  ],
+                                ),
                               ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () => _showEditDialog(project),
-                                    tooltip: 'Edit',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => _deleteProject(project),
-                                    tooltip: 'Delete',
-                                    color: Colors.red,
-                                  ),
-                                ],
-                              ),
-                              isThreeLine: true,
                             ),
                           );
                         },
@@ -477,10 +755,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreateDialog,
-        child: const Icon(Icons.add),
         tooltip: 'Add Project',
+        child: const Icon(Icons.add),
       ),
     );
   }
 }
-

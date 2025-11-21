@@ -4,6 +4,8 @@ const env = require('./config/env');
 const { initializeDatabase } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminAuthRoutes = require('./routes/adminAuth');
+const supervisorAuthRoutes = require('./routes/supervisorAuth');
+const supervisorRoutes = require('./routes/supervisorRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const adminProjectsRoutes = require('./routes/adminProjects');
 const adminEmployeesRoutes = require('./routes/adminEmployees');
@@ -19,6 +21,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use(['/api/admin/auth', '/admin/auth'], adminAuthRoutes);
+app.use(['/api/supervisor/auth', '/supervisor/auth'], supervisorAuthRoutes);
+app.use(['/api/supervisor', '/supervisor'], supervisorRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use(['/api/admin/projects', '/admin/projects'], adminProjectsRoutes);
 app.use(['/api/admin/employees', '/admin/employees'], adminEmployeesRoutes);

@@ -1,0 +1,5 @@
+workerName,checkInTime,checkOutTime,expectedStatus
+John Doe,2024-01-15T08:00,2024-01-15T17:00,PRESENT
+Jane Smith,2024-01-15T09:00,,CHECKED IN
+Bob Johnson,2024-01-15T08:30,2024-01-15T18:00,PRESENT
+

@@ -81,8 +81,9 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         showBackButton: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: _isRefreshing ? null : _refreshRecords,
+            tooltip: 'Refresh',
           ),
         ],
       ),

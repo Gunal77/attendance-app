@@ -257,25 +257,46 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ? const Center(child: CircularProgressIndicator())
         : _errorMessage != null
         ? Center(
-            child: Text(
-              _errorMessage!,
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red.shade300,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _errorMessage!,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _loadRecords,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
             ),
           )
         : _buildContent();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: const Text(
+          'Attendance Dashboard',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
         actions: [
           IconButton(
             tooltip: 'Refresh',
             onPressed: _isLoading ? null : _loadRecords,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await _apiService.clearAdminSession();
               if (!mounted) return;
@@ -293,123 +314,255 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildContent() {
+    // Calculate stats
+    final totalRecords = _allRecords.length;
+    final today = DateTime.now();
+    final todayRecords = _allRecords.where((record) {
+      final checkIn = record.checkIn;
+      if (checkIn == null) return false;
+      return checkIn.year == today.year &&
+          checkIn.month == today.month &&
+          checkIn.day == today.day;
+    }).length;
+    final uniqueUsers = _userOptions.length;
+
     return RefreshIndicator(
       onRefresh: _loadRecords,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          // Stats Cards
+          Row(
             children: [
-              SizedBox(
-                width: 220,
-                child: DropdownButtonFormField<String>(
-                  value: _selectedUserEmail ?? '',
-                  items: _userDropdownItems,
-                  isExpanded: true,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedUserEmail = value?.isEmpty ?? true
-                          ? null
-                          : value;
-                    });
-                    _applyFilters();
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Filter by user',
-                    border: OutlineInputBorder(),
-                  ),
+              Expanded(
+                child: _buildStatCard(
+                  'Total Records',
+                  totalRecords.toString(),
+                  Icons.assignment,
+                  Colors.blue,
                 ),
               ),
-              SizedBox(
-                width: 160,
-                child: DropdownButtonFormField<int>(
-                  value: _selectedMonth ?? 0,
-                  items: _monthDropdownItems,
-                  isExpanded: true,
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == null || value == 0) {
-                        _selectedMonth = null;
-                      } else {
-                        _selectedMonth = value;
-                      }
-                      if (_selectedMonth == null) {
-                        _selectedYear = null;
-                      }
-                    });
-                    _applyFilters();
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Filter by month',
-                    border: OutlineInputBorder(),
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Today',
+                  todayRecords.toString(),
+                  Icons.today,
+                  Colors.green,
                 ),
               ),
-              SizedBox(
-                width: 140,
-                child: DropdownButtonFormField<int>(
-                  value: _selectedYear ?? 0,
-                  items: _yearDropdownItems,
-                  isExpanded: true,
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == null || value == 0) {
-                        _selectedYear = null;
-                      } else {
-                        _selectedYear = value;
-                      }
-                    });
-                    _applyFilters();
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Filter by year',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              OutlinedButton.icon(
-                onPressed: _pickDate,
-                icon: const Icon(Icons.calendar_today),
-                label: Text(
-                  _selectedDate == null
-                      ? 'Filter by date'
-                      : _dateFormat.format(_selectedDate!),
-                ),
-              ),
-              if (_selectedDate != null ||
-                  _selectedMonth != null ||
-                  _selectedUserEmail != null)
-                TextButton(
-                  onPressed: _clearFilters,
-                  child: const Text('Clear filters'),
-                ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Users',
+                  uniqueUsers.toString(),
+                  Icons.people,
+                  Colors.orange,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Filtered',
+                  _filteredRecords.length.toString(),
+                  Icons.filter_list,
+                  Colors.purple,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Filters Section
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.filter_alt, color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Filters',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: DropdownButtonFormField<String>(
+                          value: _selectedUserEmail ?? '',
+                          items: _userDropdownItems,
+                          isExpanded: true,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedUserEmail = value?.isEmpty ?? true
+                                  ? null
+                                  : value;
+                            });
+                            _applyFilters();
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Filter by user',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: _selectedMonth ?? 0,
+                              items: _monthDropdownItems,
+                              isExpanded: true,
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == null || value == 0) {
+                                    _selectedMonth = null;
+                                  } else {
+                                    _selectedMonth = value;
+                                  }
+                                  if (_selectedMonth == null) {
+                                    _selectedYear = null;
+                                  }
+                                });
+                                _applyFilters();
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Month',
+                                prefixIcon: const Icon(Icons.calendar_month),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: _selectedYear ?? 0,
+                              items: _yearDropdownItems,
+                              isExpanded: true,
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == null || value == 0) {
+                                    _selectedYear = null;
+                                  } else {
+                                    _selectedYear = value;
+                                  }
+                                });
+                                _applyFilters();
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Year',
+                                prefixIcon: const Icon(Icons.calendar_today),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _pickDate,
+                          icon: const Icon(Icons.date_range),
+                          label: Text(
+                            _selectedDate == null
+                                ? 'Filter by specific date'
+                                : _dateFormat.format(_selectedDate!),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (_selectedDate != null ||
+                          _selectedMonth != null ||
+                          _selectedUserEmail != null)
+                        OutlinedButton.icon(
+                          onPressed: _clearFilters,
+                          icon: const Icon(Icons.clear, size: 18),
+                          label: const Text('Clear'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           _filteredRecords.isEmpty
               ? Card(
-                  elevation: 0,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(32),
                     child: Column(
                       children: [
+                        Icon(
+                          Icons.inbox_outlined,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
                         Text(
-                          'No attendance records match the current filters.',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          'No attendance records found',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
+                        Text(
+                          'No records match the current filters.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey.shade600,
+                              ),
+                          textAlign: TextAlign.center,
+                        ),
                         if (_selectedDate != null ||
                             _selectedMonth != null ||
                             _selectedUserEmail != null ||
-                            _selectedYear != null)
-                          TextButton(
+                            _selectedYear != null) ...[
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
                             onPressed: _clearFilters,
-                            child: const Text('Reset filters'),
+                            icon: const Icon(Icons.clear, size: 18),
+                            label: const Text('Clear Filters'),
                           ),
+                        ],
                       ],
                     ),
                   ),
@@ -511,7 +664,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         : '—';
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -524,16 +681,44 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        record.displayName,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        record.userEmail,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: 20,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  record.displayName,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  record.userEmail,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.grey.shade600,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -541,33 +726,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 _buildImageCell(record.imageUrl),
               ],
             ),
-            const Divider(height: 24),
-            _buildKeyValueRow('Date', dateText),
-            const SizedBox(height: 8),
-            _buildKeyValueRow('Check-in', checkInText),
-            const SizedBox(height: 8),
-            _buildKeyValueRow('Check-out', checkOutText),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  _buildKeyValueRow(Icons.calendar_today, 'Date', dateText),
+                  const SizedBox(height: 12),
+                  _buildKeyValueRow(Icons.login, 'Check-in', checkInText),
+                  const SizedBox(height: 12),
+                  _buildKeyValueRow(Icons.logout, 'Check-out', checkOutText),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildKeyValueRow(String label, String value) {
+  Widget _buildKeyValueRow(IconData icon, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Icon(icon, size: 18, color: Colors.grey.shade600),
+        const SizedBox(width: 8),
         SizedBox(
-          width: 90,
+          width: 80,
           child: Text(
             label,
-            style: Theme.of(context).textTheme.labelMedium,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Colors.grey.shade700,
+                ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
           ),
         ),
       ],
@@ -653,6 +855,62 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withOpacity(0.1),
+              color.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey.shade600,
+                  ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

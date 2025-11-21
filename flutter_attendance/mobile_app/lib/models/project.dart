@@ -6,6 +6,8 @@ class Project {
     this.startDate,
     this.endDate,
     this.createdAt,
+    this.description,
+    this.budget,
   });
 
   final String id;
@@ -14,6 +16,8 @@ class Project {
   final DateTime? startDate;
   final DateTime? endDate;
   final DateTime? createdAt;
+  final String? description;
+  final double? budget;
 
   static Project fromJson(Map<String, dynamic> json) {
     DateTime? parseDate(dynamic value) {
@@ -24,6 +28,17 @@ class Project {
       return DateTime.tryParse(text);
     }
 
+    double? parseBudget(dynamic value) {
+      if (value == null) return null;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        final parsed = double.tryParse(value);
+        return parsed;
+      }
+      return null;
+    }
+
     return Project(
       id: (json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
@@ -31,6 +46,8 @@ class Project {
       startDate: parseDate(json['start_date']),
       endDate: parseDate(json['end_date']),
       createdAt: parseDate(json['created_at']),
+      description: json['description']?.toString(),
+      budget: parseBudget(json['budget']),
     );
   }
 
@@ -42,7 +59,8 @@ class Project {
       'start_date': startDate?.toIso8601String(),
       'end_date': endDate?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
+      'description': description,
+      'budget': budget,
     };
   }
 }
-
